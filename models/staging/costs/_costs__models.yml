@@ -1,0 +1,142 @@
+version: 2
+
+models:
+  - name: stg_costs__credit_transactions
+    description: One row per synthetic credit transaction after type and category standardization.
+    columns:
+      - name: credit_transaction_id
+        description: Synthetic credit transaction business key.
+        data_tests: [not_null, unique]
+      - name: loan_id
+        description: Synthetic funded loan identifier.
+        data_tests: [not_null]
+      - name: transaction_date
+        description: Fictional credit transaction date.
+        data_tests: [not_null]
+      - name: credit_cost_amount
+        description: Fictional credit transaction cost.
+        data_tests: [not_null, positive_value]
+      - name: transaction_type
+        description: Standardized credit transaction category.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["REPORT", "SUPPLEMENT"]
+
+  - name: stg_costs__commissions
+    description: One row per synthetic funded-loan commission after type and category standardization.
+    columns:
+      - name: commission_id
+        description: Synthetic commission business key.
+        data_tests: [not_null, unique]
+      - name: loan_id
+        description: Synthetic funded loan identifier.
+        data_tests: [not_null]
+      - name: commission_month
+        description: Commission month end.
+        data_tests: [not_null, valid_month_end]
+      - name: commission_amount
+        description: Fictional commission cost.
+        data_tests: [not_null, positive_value]
+      - name: commission_type
+        description: Standardized commission category.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["STANDARD"]
+
+  - name: stg_costs__overrides
+    description: One row per synthetic override cost after type and category standardization.
+    columns:
+      - name: override_id
+        description: Synthetic override business key.
+        data_tests: [not_null, unique]
+      - name: loan_id
+        description: Synthetic funded loan identifier.
+        data_tests: [not_null]
+      - name: override_month
+        description: Override month end.
+        data_tests: [not_null, valid_month_end]
+      - name: override_amount
+        description: Fictional override cost.
+        data_tests: [not_null, positive_value]
+      - name: override_type
+        description: Standardized override category.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["BRANCH_SUPPORT"]
+
+  - name: stg_costs__trueups
+    description: One row per synthetic cost true-up after type and category standardization.
+    columns:
+      - name: trueup_id
+        description: Synthetic true-up business key.
+        data_tests: [not_null, unique]
+      - name: loan_id
+        description: Synthetic funded loan identifier.
+        data_tests: [not_null]
+      - name: posting_month
+        description: True-up posting month end.
+        data_tests: [not_null, valid_month_end]
+      - name: trueup_amount
+        description: Fictional signed true-up cost.
+        data_tests: [not_null]
+      - name: trueup_reason
+        description: Standardized generic true-up reason.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["SYNTHETIC_RECLASS"]
+
+  - name: stg_costs__margin_adjustments
+    description: One row per synthetic revenue margin adjustment after type and category standardization.
+    columns:
+      - name: margin_adjustment_id
+        description: Synthetic margin adjustment business key.
+        data_tests: [not_null, unique]
+      - name: loan_id
+        description: Synthetic funded loan identifier.
+        data_tests: [not_null]
+      - name: adjustment_month
+        description: Adjustment month end.
+        data_tests: [not_null, valid_month_end]
+      - name: margin_adjustment_amount
+        description: Fictional signed margin adjustment.
+        data_tests: [not_null]
+      - name: adjustment_reason
+        description: Standardized generic adjustment reason.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["SYNTHETIC_PRICING_ADJUSTMENT"]
+
+  - name: stg_costs__branch_overhead
+    description: One row per synthetic branch and month-end overhead record after standardization.
+    data_tests:
+      - unique_combination:
+          arguments:
+            combination_of_columns: [month_end_date, branch_id]
+    columns:
+      - name: month_end_date
+        description: Overhead month end.
+        data_tests: [not_null, valid_month_end]
+      - name: branch_id
+        description: Synthetic branch identifier.
+        data_tests: [not_null]
+      - name: monthly_branch_overhead
+        description: Fictional monthly operating overhead.
+        data_tests: [not_null, positive_value]
+      - name: overhead_basis
+        description: Standardized generic allocation basis.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["SYNTHETIC_FIXED_ALLOCATION"]
+

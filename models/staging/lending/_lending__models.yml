@@ -1,0 +1,126 @@
+version: 2
+
+models:
+  - name: stg_lending__loans
+    description: One row per synthetic funded loan after type casting, identifier cleanup, and status standardization.
+    columns:
+      - name: loan_id
+        description: Synthetic loan business key.
+        data_tests: [not_null, unique]
+      - name: funded_date
+        description: Fictional funding date.
+        data_tests: [not_null]
+      - name: month_end_date
+        description: Calendar month end assigned to the funded loan.
+        data_tests:
+          - not_null
+          - valid_month_end
+      - name: branch_id
+        description: Synthetic branch identifier.
+        data_tests: [not_null]
+      - name: program_id
+        description: Synthetic program identifier.
+        data_tests: [not_null]
+      - name: partner_id
+        description: Optional synthetic partner identifier; null means no partner.
+      - name: funded_amount
+        description: Fictional funded principal amount.
+        data_tests:
+          - not_null
+          - positive_value
+      - name: base_margin_bps
+        description: Fictional base revenue rate in basis points.
+        data_tests: [not_null]
+      - name: origination_fee_amount
+        description: Fictional origination fee amount.
+        data_tests: [not_null]
+      - name: loan_status
+        description: Standardized funded-loan status.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["FUNDED"]
+      - name: created_at
+        description: Synthetic record creation timestamp.
+        data_tests: [not_null]
+      - name: updated_at
+        description: Synthetic source update timestamp.
+        data_tests: [not_null]
+
+  - name: stg_lending__funding_statements
+    description: One row per synthetic branch and month-end funding control statement after standardization.
+    data_tests:
+      - unique_combination:
+          arguments:
+            combination_of_columns: [month_end_date, branch_id]
+    columns:
+      - name: month_end_date
+        description: Statement month end.
+        data_tests: [not_null, valid_month_end]
+      - name: branch_id
+        description: Synthetic branch identifier.
+        data_tests: [not_null]
+      - name: statement_loan_count
+        description: Control count of funded loans.
+        data_tests: [not_null, positive_value]
+      - name: statement_funded_amount
+        description: Control sum of funded principal.
+        data_tests: [not_null, positive_value]
+      - name: statement_source
+        description: Standardized fictional statement source.
+        data_tests: [not_null]
+
+  - name: stg_lending__programs
+    description: One row per synthetic loan program after type and category standardization.
+    columns:
+      - name: program_id
+        description: Synthetic program business key.
+        data_tests: [not_null, unique]
+      - name: program_name
+        description: Fictional program name.
+        data_tests: [not_null]
+      - name: product_family
+        description: Standardized generic product family.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["CONVENTIONAL", "GOVERNMENT", "JUMBO", "COMMUNITY"]
+      - name: default_margin_bps
+        description: Fictional default margin rate in basis points.
+        data_tests: [not_null]
+      - name: effective_start_date
+        description: First date when the program definition applies.
+        data_tests: [not_null]
+      - name: effective_end_date
+        description: Last date when the program definition applies; null means open-ended.
+
+  - name: stg_lending__branch_hierarchy
+    description: One row per synthetic branch hierarchy effective period after type and identifier cleanup.
+    data_tests:
+      - unique_combination:
+          arguments:
+            combination_of_columns: [branch_id, effective_start_date]
+    columns:
+      - name: branch_id
+        description: Synthetic branch identifier.
+        data_tests: [not_null]
+      - name: branch_name
+        description: Fictional branch name.
+        data_tests: [not_null]
+      - name: region_id
+        description: Synthetic region identifier effective for the period.
+        data_tests: [not_null]
+      - name: region_name
+        description: Fictional region name effective for the period.
+        data_tests: [not_null]
+      - name: effective_start_date
+        description: First date of the hierarchy assignment.
+        data_tests: [not_null]
+      - name: effective_end_date
+        description: Last date of the hierarchy assignment; null means open-ended.
+      - name: is_active
+        description: True for the current generated assignment.
+        data_tests: [not_null]
+

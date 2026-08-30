@@ -1,0 +1,30 @@
+version: 2
+
+models:
+  - name: stg_partners__statements
+    description: One row per synthetic partner-loan statement after type and identifier cleanup.
+    columns:
+      - name: statement_id
+        description: Synthetic partner statement business key.
+        data_tests: [not_null, unique]
+      - name: loan_id
+        description: Synthetic funded loan identifier.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_lending__loans')
+                field: loan_id
+      - name: partner_id
+        description: Synthetic partner identifier.
+        data_tests: [not_null]
+      - name: partner_revenue_amount
+        description: Fictional partner revenue amount.
+        data_tests: [not_null, positive_value]
+      - name: statement_month
+        description: Statement month end.
+        data_tests: [not_null, valid_month_end]
+      - name: received_at
+        description: Synthetic statement receipt timestamp.
+        data_tests: [not_null]
+

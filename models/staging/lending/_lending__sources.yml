@@ -1,0 +1,85 @@
+version: 2
+
+sources:
+  - name: raw_lending
+    description: Static synthetic lending inputs generated with a fixed seed. Freshness is not applicable because these files do not arrive on a schedule.
+    schema: "{{ target.schema }}_raw"
+    tables:
+      - name: loans
+        identifier: raw_loans
+        description: One row per synthetic funded loan. The business key is loan_id; all identifiers and amounts are fictional.
+        columns:
+          - name: loan_id
+            description: Synthetic loan business key.
+            data_tests: [not_null, unique]
+          - name: funded_date
+            description: Fictional loan funding date.
+          - name: month_end_date
+            description: Calendar month end assigned to the funding date.
+          - name: branch_id
+            description: Synthetic originating branch identifier.
+          - name: program_id
+            description: Synthetic loan program identifier.
+          - name: partner_id
+            description: Optional synthetic partner identifier; null means no partner.
+          - name: funded_amount
+            description: Fictional funded principal amount.
+          - name: base_margin_bps
+            description: Fictional base revenue rate in basis points.
+          - name: origination_fee_amount
+            description: Fictional origination fee amount.
+          - name: status
+            description: Raw loan status.
+          - name: created_at
+            description: Synthetic record creation timestamp.
+          - name: updated_at
+            description: Synthetic record update timestamp.
+      - name: funding_statements
+        identifier: raw_funding_statements
+        description: One row per branch and month end containing synthetic funding control totals. The business key is month_end_date plus branch_id.
+        columns:
+          - name: month_end_date
+            description: Control statement month end.
+          - name: branch_id
+            description: Synthetic branch identifier.
+          - name: statement_loan_count
+            description: Count of funded loans in the branch and month.
+          - name: statement_funded_amount
+            description: Sum of funded amount in the branch and month.
+          - name: statement_source
+            description: Label identifying the fictional control source.
+      - name: programs
+        identifier: raw_programs
+        description: One row per synthetic loan program. The business key is program_id.
+        columns:
+          - name: program_id
+            description: Synthetic program identifier.
+          - name: program_name
+            description: Fictional program name.
+          - name: product_family
+            description: Generic product family.
+          - name: default_margin_bps
+            description: Fictional default margin rate in basis points.
+          - name: effective_start_date
+            description: First date when the program definition applies.
+          - name: effective_end_date
+            description: Last date when the program definition applies; null means open-ended.
+      - name: branch_hierarchy
+        identifier: raw_branch_hierarchy
+        description: One row per branch hierarchy effective period. The business key is branch_id plus effective_start_date.
+        columns:
+          - name: branch_id
+            description: Synthetic branch identifier.
+          - name: branch_name
+            description: Fictional branch name.
+          - name: region_id
+            description: Synthetic region identifier effective for the period.
+          - name: region_name
+            description: Fictional region name effective for the period.
+          - name: effective_start_date
+            description: First date of the hierarchy assignment.
+          - name: effective_end_date
+            description: Last date of the hierarchy assignment; null means open-ended.
+          - name: is_active
+            description: True for the current generated assignment.
+

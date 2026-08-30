@@ -1,0 +1,90 @@
+version: 2
+
+sources:
+  - name: raw_costs
+    description: Static synthetic loan-cost and overhead inputs generated with a fixed seed. Freshness is not applicable to these files.
+    schema: "{{ target.schema }}_raw"
+    tables:
+      - name: credit_transactions
+        identifier: raw_credit_transactions
+        description: One or more synthetic credit transactions per funded loan. The business key is credit_transaction_id.
+        columns:
+          - name: credit_transaction_id
+            description: Synthetic credit transaction identifier.
+          - name: loan_id
+            description: Synthetic funded loan identifier.
+          - name: transaction_date
+            description: Fictional credit transaction date.
+          - name: credit_cost_amount
+            description: Fictional cost of the credit transaction.
+          - name: transaction_type
+            description: Generic credit transaction category.
+      - name: commissions
+        identifier: raw_commissions
+        description: One synthetic commission row per funded loan. The business key is commission_id.
+        columns:
+          - name: commission_id
+            description: Synthetic commission identifier.
+          - name: loan_id
+            description: Synthetic funded loan identifier.
+          - name: commission_month
+            description: Month end when the commission applies.
+          - name: commission_amount
+            description: Fictional commission cost.
+          - name: commission_type
+            description: Generic commission category.
+      - name: overrides
+        identifier: raw_overrides
+        description: Zero or more synthetic override costs per loan. The business key is override_id.
+        columns:
+          - name: override_id
+            description: Synthetic override identifier.
+          - name: loan_id
+            description: Synthetic funded loan identifier.
+          - name: override_month
+            description: Month end when the override applies.
+          - name: override_amount
+            description: Fictional override cost.
+          - name: override_type
+            description: Generic override category.
+      - name: trueups
+        identifier: raw_trueups
+        description: Zero or more synthetic cost true-ups per loan and posting month. The business key is trueup_id.
+        columns:
+          - name: trueup_id
+            description: Synthetic true-up identifier.
+          - name: loan_id
+            description: Synthetic funded loan identifier.
+          - name: posting_month
+            description: Month end when the true-up posts.
+          - name: trueup_amount
+            description: Fictional signed true-up cost.
+          - name: trueup_reason
+            description: Generic reason for the true-up.
+      - name: margin_adjustments
+        identifier: raw_margin_adjustments
+        description: Zero or more synthetic margin adjustments per funded loan. The business key is margin_adjustment_id.
+        columns:
+          - name: margin_adjustment_id
+            description: Synthetic margin adjustment identifier.
+          - name: loan_id
+            description: Synthetic funded loan identifier.
+          - name: adjustment_month
+            description: Month end when the adjustment applies.
+          - name: margin_adjustment_amount
+            description: Fictional signed revenue adjustment.
+          - name: adjustment_reason
+            description: Generic reason for the adjustment.
+      - name: branch_overhead
+        identifier: raw_branch_overhead
+        description: One row per branch and month end containing fictional operating overhead. The business key is month_end_date plus branch_id.
+        columns:
+          - name: month_end_date
+            description: Month end for the overhead amount.
+          - name: branch_id
+            description: Synthetic branch identifier.
+          - name: monthly_branch_overhead
+            description: Fictional monthly operating overhead.
+          - name: overhead_basis
+            description: Generic allocation basis label.
+
