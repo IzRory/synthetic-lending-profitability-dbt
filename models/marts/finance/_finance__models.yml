@@ -1,0 +1,234 @@
+version: 2
+
+models:
+  - name: fct_loan_profitability
+    description: One row per synthetic funded loan with final rounded revenue, cost, profit, and margin measures.
+    columns:
+      - name: loan_id
+        description: Synthetic funded loan business key.
+        data_tests: [not_null, unique]
+      - name: funded_date
+        description: Fictional loan funding date.
+        data_tests: [not_null]
+      - name: month_end_date
+        description: Calendar month end assigned to the funded loan.
+        data_tests: [not_null, valid_month_end]
+      - name: branch_id
+        description: Synthetic originating branch identifier.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_branch')
+                field: branch_id
+      - name: region_id
+        description: Synthetic region effective at the loan month end.
+        data_tests: [not_null]
+      - name: program_id
+        description: Synthetic loan program identifier.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_program')
+                field: program_id
+      - name: partner_id
+        description: Optional synthetic partner identifier; null means no partner.
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_partner')
+                field: partner_id
+      - name: funded_amount
+        description: Fictional funded principal amount rounded to cents.
+        data_tests: [not_null, positive_value]
+      - name: base_revenue
+        description: Funded amount multiplied by base margin basis points divided by 10,000, rounded to cents.
+        data_tests: [not_null]
+      - name: origination_fee_amount
+        description: Fictional origination fee revenue rounded to cents.
+        data_tests: [not_null]
+      - name: partner_revenue_amount
+        description: Fictional partner statement revenue rounded to cents; zero when absent.
+        data_tests: [not_null]
+      - name: margin_adjustment_amount
+        description: Fictional signed margin adjustment rounded to cents; zero when absent.
+        data_tests: [not_null]
+      - name: total_revenue
+        description: Sum of all named revenue components rounded to cents.
+        data_tests: [not_null]
+      - name: commission_amount
+        description: Fictional commission cost rounded to cents.
+        data_tests: [not_null]
+      - name: override_amount
+        description: Fictional override cost rounded to cents; zero when absent.
+        data_tests: [not_null]
+      - name: credit_cost_amount
+        description: Fictional total credit transaction cost rounded to cents.
+        data_tests: [not_null]
+      - name: trueup_amount
+        description: Fictional signed true-up cost rounded to cents; zero when absent.
+        data_tests: [not_null]
+      - name: direct_cost
+        description: Sum of commission, override, credit, and true-up costs rounded to cents.
+        data_tests: [not_null]
+      - name: allocated_operating_cost
+        description: Equal allocation of monthly branch overhead across funded loans, rounded to cents.
+        data_tests: [not_null]
+      - name: total_cost
+        description: Direct cost plus allocated operating cost rounded to cents.
+        data_tests: [not_null]
+      - name: profit_amount
+        description: Total revenue less total cost rounded to cents.
+        data_tests: [not_null]
+      - name: profit_margin_bps
+        description: Profit divided by funded amount and multiplied by 10,000, rounded to two basis-point decimals.
+        data_tests: [not_null]
+      - name: profitability_status
+        description: Fictional classification based on the sign of unrounded profit.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["PROFITABLE", "BREAK_EVEN", "UNPROFITABLE"]
+      - name: source_updated_at
+        description: Synthetic source update timestamp used for incremental processing.
+        data_tests: [not_null]
+      - name: dbt_updated_at
+        description: Timestamp when dbt last materialized the row.
+        data_tests: [not_null]
+
+  - name: fct_monthly_branch_pnl
+    description: One row per synthetic branch and month end with aggregated P&L, funding controls, and prior-month comparisons.
+    data_tests:
+      - unique_combination:
+          arguments:
+            combination_of_columns: [month_end_date, branch_id]
+    columns:
+      - name: month_end_date
+        description: Calendar month end for the branch P&L.
+        data_tests: [not_null, valid_month_end]
+      - name: branch_id
+        description: Synthetic branch identifier.
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_branch')
+                field: branch_id
+      - name: branch_name
+        description: Fictional branch name effective at month end.
+        data_tests: [not_null]
+      - name: region_id
+        description: Synthetic region effective at month end.
+        data_tests: [not_null]
+      - name: region_name
+        description: Fictional region name effective at month end.
+        data_tests: [not_null]
+      - name: funded_loan_count
+        description: Count of synthetic funded loans in the branch and month.
+        data_tests: [not_null, positive_value]
+      - name: funded_amount
+        description: Sum of fictional funded principal rounded to cents.
+        data_tests: [not_null, positive_value]
+      - name: total_revenue
+        description: Sum of final loan-level revenue rounded to cents.
+        data_tests: [not_null]
+      - name: direct_cost
+        description: Sum of final loan-level direct cost rounded to cents.
+        data_tests: [not_null]
+      - name: allocated_operating_cost
+        description: Sum of allocated operating cost rounded to cents.
+        data_tests: [not_null]
+      - name: total_cost
+        description: Sum of final loan-level total cost rounded to cents.
+        data_tests: [not_null]
+      - name: profit_amount
+        description: Sum of final loan-level profit rounded to cents.
+        data_tests: [not_null]
+      - name: profit_margin_bps
+        description: Branch profit divided by branch funded amount and multiplied by 10,000.
+        data_tests: [not_null]
+      - name: funded_amount_reconciles
+        description: True when modeled funded amount matches the branch-month statement within one cent.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [true]
+      - name: loan_count_reconciles
+        description: True when modeled funded-loan count matches the branch-month statement.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [true]
+      - name: prior_month_funded_amount
+        description: Previous month funded amount for the same branch; null in the first observed month.
+      - name: prior_month_profit_amount
+        description: Previous month profit for the same branch; null in the first observed month.
+      - name: prior_month_profit_margin_bps
+        description: Previous month margin for the same branch; null in the first observed month.
+      - name: month_over_month_profit_variance
+        description: Current profit less previous month profit for the same branch.
+
+  - name: mart_profitability_executive_summary
+    description: One row per synthetic region and month end, plus one company-total row, with executive P&L measures and three prior-month variances.
+    data_tests:
+      - unique_combination:
+          arguments:
+            combination_of_columns: [month_end_date, region_id]
+    columns:
+      - name: month_end_date
+        description: Calendar month end for the executive summary.
+        data_tests: [not_null, valid_month_end]
+      - name: region_id
+        description: Synthetic region identifier or COMPANY for the total row.
+        data_tests: [not_null]
+      - name: region_name
+        description: Fictional region name or Summit Ridge Lending for the company total.
+        data_tests: [not_null]
+      - name: funded_loan_count
+        description: Count of synthetic funded loans in the region or company.
+        data_tests: [not_null, positive_value]
+      - name: funded_amount
+        description: Sum of fictional funded principal rounded to cents.
+        data_tests: [not_null, positive_value]
+      - name: total_revenue
+        description: Sum of final revenue rounded to cents.
+        data_tests: [not_null]
+      - name: total_cost
+        description: Sum of final total cost rounded to cents.
+        data_tests: [not_null]
+      - name: profit_amount
+        description: Sum of final profit rounded to cents.
+        data_tests: [not_null]
+      - name: profit_margin_bps
+        description: Region or company profit divided by funded amount and multiplied by 10,000.
+        data_tests: [not_null]
+      - name: prior_month_funded_amount
+        description: Previous month funded amount for the same region or company; null in the first month.
+      - name: prior_month_profit_amount
+        description: Previous month profit for the same region or company; null in the first month.
+      - name: prior_month_profit_margin_bps
+        description: Previous month margin for the same region or company; null in the first month.
+      - name: funded_amount_variance
+        description: Current funded amount less previous month funded amount.
+      - name: profit_amount_variance
+        description: Current profit less previous month profit.
+      - name: profit_margin_bps_variance
+        description: Current profit margin less previous month profit margin in basis points.
+
+exposures:
+  - name: executive_profitability_report
+    label: Summit Ridge Lending executive profitability report
+    type: dashboard
+    maturity: high
+    url: https://github.com/IzRory/synthetic-lending-profitability-dbt
+    description: Fictional executive P&L view backed by the branch and regional profitability marts.
+    depends_on:
+      - ref('fct_monthly_branch_pnl')
+      - ref('mart_profitability_executive_summary')
+    owner:
+      name: Portfolio project owner
+      email: portfolio@example.invalid
