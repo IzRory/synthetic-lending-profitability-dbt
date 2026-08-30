@@ -1,0 +1,16 @@
+.env
+.venv/
+*.key
+*.pem
+*.duckdb
+*.duckdb.wal
+dbt_packages/
+logs/
+target/
+seeds/failure_fixture/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store
+Thumbs.db
+

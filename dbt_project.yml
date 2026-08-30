@@ -1,0 +1,32 @@
+name: synthetic_lending_profitability
+version: 1.0.0
+config-version: 2
+
+profile: synthetic_lending_profitability
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds/generated"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  synthetic_lending_profitability:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: view
+    marts:
+      +materialized: table
+
+seeds:
+  synthetic_lending_profitability:
+    +schema: raw
+    +quote_columns: false
+
