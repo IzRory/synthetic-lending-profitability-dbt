@@ -29,4 +29,90 @@ seeds:
   synthetic_lending_profitability:
     +schema: raw
     +quote_columns: false
-
+    raw_loans:
+      +column_types:
+        loan_id: varchar
+        funded_date: date
+        month_end_date: date
+        branch_id: varchar
+        program_id: varchar
+        partner_id: varchar
+        funded_amount: decimal(18, 2)
+        base_margin_bps: decimal(10, 2)
+        origination_fee_amount: decimal(18, 2)
+        status: varchar
+        created_at: timestamp
+        updated_at: timestamp
+    raw_branch_hierarchy:
+      +column_types:
+        branch_id: varchar
+        branch_name: varchar
+        region_id: varchar
+        region_name: varchar
+        effective_start_date: date
+        effective_end_date: date
+        is_active: boolean
+    raw_programs:
+      +column_types:
+        program_id: varchar
+        program_name: varchar
+        product_family: varchar
+        default_margin_bps: decimal(10, 2)
+        effective_start_date: date
+        effective_end_date: date
+    raw_funding_statements:
+      +column_types:
+        month_end_date: date
+        branch_id: varchar
+        statement_loan_count: integer
+        statement_funded_amount: decimal(18, 2)
+        statement_source: varchar
+    raw_partner_statements:
+      +column_types:
+        statement_id: varchar
+        loan_id: varchar
+        partner_id: varchar
+        partner_revenue_amount: decimal(18, 2)
+        statement_month: date
+        received_at: timestamp
+    raw_credit_transactions:
+      +column_types:
+        credit_transaction_id: varchar
+        loan_id: varchar
+        transaction_date: date
+        credit_cost_amount: decimal(18, 2)
+        transaction_type: varchar
+    raw_commissions:
+      +column_types:
+        commission_id: varchar
+        loan_id: varchar
+        commission_month: date
+        commission_amount: decimal(18, 2)
+        commission_type: varchar
+    raw_overrides:
+      +column_types:
+        override_id: varchar
+        loan_id: varchar
+        override_month: date
+        override_amount: decimal(18, 2)
+        override_type: varchar
+    raw_trueups:
+      +column_types:
+        trueup_id: varchar
+        loan_id: varchar
+        posting_month: date
+        trueup_amount: decimal(18, 2)
+        trueup_reason: varchar
+    raw_margin_adjustments:
+      +column_types:
+        margin_adjustment_id: varchar
+        loan_id: varchar
+        adjustment_month: date
+        margin_adjustment_amount: decimal(18, 2)
+        adjustment_reason: varchar
+    raw_branch_overhead:
+      +column_types:
+        month_end_date: date
+        branch_id: varchar
+        monthly_branch_overhead: decimal(18, 2)
+        overhead_basis: varchar
