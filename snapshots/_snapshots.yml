@@ -1,0 +1,17 @@
+version: 2
+
+snapshots:
+  - name: snap_branch_hierarchy
+    description: One row per version of each synthetic branch hierarchy effective period, preserving changes detected across generator runs.
+    columns:
+      - name: branch_id
+        description: Synthetic branch identifier.
+      - name: effective_start_date
+        description: Business effective start date of the hierarchy assignment.
+      - name: region_id
+        description: Synthetic region stored in the snapshot version.
+      - name: dbt_valid_from
+        description: Timestamp when dbt first observed the version.
+      - name: dbt_valid_to
+        description: Timestamp when dbt superseded the version; null means current.
+

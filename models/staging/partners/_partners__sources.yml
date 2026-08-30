@@ -1,0 +1,24 @@
+version: 2
+
+sources:
+  - name: raw_partners
+    description: Static synthetic partner statements generated with a fixed seed. Freshness is not applicable to this portfolio fixture.
+    schema: "{{ target.schema }}_raw"
+    tables:
+      - name: statements
+        identifier: raw_partner_statements
+        description: One row per synthetic partner-loan statement. The business key is statement_id; each partnered loan has one default statement row.
+        columns:
+          - name: statement_id
+            description: Synthetic partner statement identifier.
+          - name: loan_id
+            description: Synthetic funded loan identifier.
+          - name: partner_id
+            description: Synthetic partner identifier.
+          - name: partner_revenue_amount
+            description: Fictional partner revenue amount.
+          - name: statement_month
+            description: Month end covered by the statement.
+          - name: received_at
+            description: Synthetic statement receipt timestamp.
+

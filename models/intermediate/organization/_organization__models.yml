@@ -1,0 +1,67 @@
+version: 2
+
+models:
+  - name: int_organization__month_end_hierarchy
+    description: One row per synthetic branch and loan month end with the branch-to-region assignment effective on that month end.
+    data_tests:
+      - unique_combination:
+          arguments:
+            combination_of_columns: [branch_id, month_end_date]
+    columns:
+      - name: branch_id
+        description: Synthetic branch identifier.
+        data_tests: [not_null]
+      - name: month_end_date
+        description: Loan month end used for the as-of lookup.
+        data_tests: [not_null, valid_month_end]
+      - name: branch_name
+        description: Fictional branch name effective for the month.
+        data_tests: [not_null]
+      - name: region_id
+        description: Synthetic region effective for the month.
+        data_tests: [not_null]
+      - name: region_name
+        description: Fictional region name effective for the month.
+        data_tests: [not_null]
+      - name: effective_start_date
+        description: Start date of the selected hierarchy assignment.
+        data_tests: [not_null]
+      - name: effective_end_date
+        description: End date of the selected hierarchy assignment; null means open-ended.
+
+unit_tests:
+  - name: unit_month_end_hierarchy_selection
+    description: Confirms that month-end as-of logic selects the old region before a move and the new region after it.
+    model: int_organization__month_end_hierarchy
+    given:
+      - input: ref('stg_lending__loans')
+        rows:
+          - branch_id: BR_TEST
+            month_end_date: '2025-01-31'
+          - branch_id: BR_TEST
+            month_end_date: '2025-02-28'
+      - input: ref('snap_branch_hierarchy')
+        rows:
+          - branch_id: BR_TEST
+            branch_name: Summit Test Branch
+            region_id: RG_OLD
+            region_name: Summit Old Region
+            effective_start_date: '2024-01-01'
+            effective_end_date: '2025-01-31'
+            dbt_valid_to: null
+          - branch_id: BR_TEST
+            branch_name: Summit Test Branch
+            region_id: RG_NEW
+            region_name: Summit New Region
+            effective_start_date: '2025-02-01'
+            effective_end_date: null
+            dbt_valid_to: null
+    expect:
+      rows:
+        - branch_id: BR_TEST
+          month_end_date: '2025-01-31'
+          region_id: RG_OLD
+        - branch_id: BR_TEST
+          month_end_date: '2025-02-28'
+          region_id: RG_NEW
+
