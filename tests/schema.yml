@@ -1,0 +1,20 @@
+version: 2
+
+data_tests:
+  - name: assert_funding_amount_reconciles
+    description: Returns branch-month rows whose modeled funded amount differs from the synthetic statement by more than one cent.
+  - name: assert_funded_loan_count_reconciles
+    description: Returns branch-month rows whose modeled funded-loan count differs from the synthetic statement count.
+  - name: assert_profit_equation_balances
+    description: Returns final loan rows where total revenue less total cost differs from profit by more than one cent.
+  - name: assert_partner_statement_reconciles
+    description: Returns partner-month rows with a loan-count difference or partner-revenue difference above one cent.
+  - name: assert_component_completeness
+    description: Returns funded loans missing a mandatory revenue, direct-cost, or overhead component after zero defaults.
+  - name: assert_margin_within_expected_bounds
+    description: Returns fictional loans outside the intentionally broad range of -1,500 to 1,500 profit-margin basis points.
+  - name: assert_no_orphan_dimension_keys
+    description: Returns final loan rows with unresolved branch, region, program, or non-null partner keys.
+  - name: assert_hierarchy_assignment_is_unique
+    description: Returns loans whose month end resolves to zero or more than one branch hierarchy assignment.
+
