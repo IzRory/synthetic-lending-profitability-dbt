@@ -1,0 +1,13 @@
+program_id,program_name,product_family,default_margin_bps,effective_start_date,effective_end_date
+PG001,Summit Conventional 01,Conventional,278,2024-08-01,
+PG002,Summit Government 02,Government,296,2024-08-01,
+PG003,Summit Jumbo 03,Jumbo,314,2024-08-01,
+PG004,Summit Community 04,Community,332,2024-08-01,
+PG005,Summit Conventional 05,Conventional,350,2024-08-01,
+PG006,Summit Government 06,Government,368,2024-08-01,
+PG007,Summit Jumbo 07,Jumbo,386,2024-08-01,
+PG008,Summit Community 08,Community,404,2024-08-01,
+PG009,Summit Conventional 09,Conventional,422,2024-08-01,
+PG010,Summit Government 10,Government,440,2024-08-01,
+PG011,Summit Jumbo 11,Jumbo,458,2024-08-01,
+PG012,Summit Community 12,Community,476,2024-08-01,
