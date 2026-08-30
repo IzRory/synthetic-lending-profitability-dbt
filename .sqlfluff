@@ -1,0 +1,18 @@
+[sqlfluff]
+dialect = duckdb
+templater = dbt
+max_line_length = 120
+exclude_rules = LT05, ST06, RF02
+
+[sqlfluff:templater:dbt]
+project_dir = .
+profiles_dir = profiles
+profile = synthetic_lending_profitability
+target = ci
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = lower
+
+[sqlfluff:rules:capitalisation.identifiers]
+extended_capitalisation_policy = lower
+
