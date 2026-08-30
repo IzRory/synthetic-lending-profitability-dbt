@@ -1,0 +1,53 @@
+version: 2
+
+models:
+  - name: dim_branch
+    description: One row per synthetic branch containing its current generated region assignment.
+    columns:
+      - name: branch_id
+        description: Synthetic branch business key.
+        data_tests: [not_null, unique]
+      - name: branch_name
+        description: Fictional branch name.
+        data_tests: [not_null]
+      - name: current_region_id
+        description: Synthetic current region identifier.
+        data_tests: [not_null]
+      - name: current_region_name
+        description: Fictional current region name.
+        data_tests: [not_null]
+      - name: current_assignment_start_date
+        description: First date of the current branch-to-region assignment.
+        data_tests: [not_null]
+
+  - name: dim_program
+    description: One row per synthetic loan program containing generic product attributes and fictional default margin.
+    columns:
+      - name: program_id
+        description: Synthetic program business key.
+        data_tests: [not_null, unique]
+      - name: program_name
+        description: Fictional program name.
+        data_tests: [not_null]
+      - name: product_family
+        description: Generic product family.
+        data_tests: [not_null]
+      - name: default_margin_bps
+        description: Fictional default margin in basis points.
+        data_tests: [not_null]
+      - name: effective_start_date
+        description: First date when the program applies.
+        data_tests: [not_null]
+      - name: effective_end_date
+        description: Last date when the program applies; null means open-ended.
+
+  - name: dim_partner
+    description: One row per synthetic partner appearing in the fictional partner statements.
+    columns:
+      - name: partner_id
+        description: Synthetic partner business key.
+        data_tests: [not_null, unique]
+      - name: partner_name
+        description: Fictional partner name.
+        data_tests: [not_null]
+

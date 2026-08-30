@@ -1,0 +1,212 @@
+version: 2
+
+models:
+  - name: int_finance__loans_enriched
+    description: One row per synthetic funded loan enriched with effective-dated branch, region, program, and optional partner attributes.
+    columns:
+      - name: loan_id
+        description: Synthetic funded loan business key.
+        data_tests: [not_null, unique]
+      - name: branch_id
+        description: Synthetic branch identifier.
+        data_tests: [not_null]
+      - name: region_id
+        description: Synthetic region effective at the loan month end.
+        data_tests: [not_null]
+      - name: program_id
+        description: Synthetic loan program identifier.
+        data_tests: [not_null]
+      - name: program_name
+        description: Fictional program name resolved from the program dimension input.
+        data_tests: [not_null]
+      - name: partner_id
+        description: Optional synthetic partner identifier.
+      - name: partner_name
+        description: Fictional partner name; null when the loan has no partner.
+
+  - name: int_finance__revenue_components
+    description: One row per synthetic funded loan containing unrounded base, fee, partner, and margin-adjustment revenue components.
+    columns:
+      - name: loan_id
+        description: Synthetic funded loan business key.
+        data_tests: [not_null, unique]
+      - name: base_revenue
+        description: Funded amount multiplied by base margin basis points divided by 10,000.
+        data_tests: [not_null]
+      - name: origination_fee_amount
+        description: Fictional origination fee revenue.
+        data_tests: [not_null]
+      - name: partner_revenue_amount
+        description: Fictional partner statement revenue, defaulted to zero.
+        data_tests: [not_null]
+      - name: margin_adjustment_amount
+        description: Fictional signed margin adjustment, defaulted to zero.
+        data_tests: [not_null]
+
+  - name: int_finance__cost_components
+    description: One row per synthetic funded loan containing unrounded commission, override, credit, and true-up cost components.
+    columns:
+      - name: loan_id
+        description: Synthetic funded loan business key.
+        data_tests: [not_null, unique]
+      - name: commission_amount
+        description: Fictional commission cost, defaulted to zero.
+        data_tests: [not_null]
+      - name: override_amount
+        description: Fictional override cost, defaulted to zero.
+        data_tests: [not_null]
+      - name: credit_cost_amount
+        description: Fictional total credit transaction cost, defaulted to zero.
+        data_tests: [not_null]
+      - name: trueup_amount
+        description: Fictional signed true-up cost, defaulted to zero.
+        data_tests: [not_null]
+
+  - name: int_finance__loan_components
+    description: One row per synthetic funded loan combining organizational attributes, revenue, direct costs, and allocated branch overhead before the profit equation.
+    columns:
+      - name: loan_id
+        description: Synthetic funded loan business key.
+        data_tests: [not_null, unique]
+      - name: monthly_branch_overhead
+        description: Fictional branch overhead for the loan month.
+        data_tests: [not_null]
+      - name: monthly_branch_funded_loan_count
+        description: Funded-loan count used as the overhead allocation denominator.
+        data_tests: [not_null, positive_value]
+      - name: allocated_operating_cost
+        description: Monthly branch overhead divided by monthly branch funded-loan count.
+        data_tests: [not_null]
+
+  - name: int_finance__profit_calculation
+    description: One row per synthetic funded loan with the unrounded revenue, cost, profit, and margin equations applied.
+    columns:
+      - name: loan_id
+        description: Synthetic funded loan business key.
+        data_tests: [not_null, unique]
+      - name: total_revenue
+        description: Sum of all named revenue components.
+        data_tests: [not_null]
+      - name: direct_cost
+        description: Sum of all named direct-cost components.
+        data_tests: [not_null]
+      - name: total_cost
+        description: Direct cost plus allocated operating cost.
+        data_tests: [not_null]
+      - name: profit_amount
+        description: Total revenue less total cost.
+        data_tests: [not_null]
+      - name: profit_margin_bps
+        description: Profit divided by funded amount and multiplied by 10,000.
+        data_tests: [not_null]
+      - name: profitability_status
+        description: Fictional profitability classification.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["PROFITABLE", "BREAK_EVEN", "UNPROFITABLE"]
+
+  - name: int_finance__partner_reconciliation
+    description: One row per synthetic partner and month end comparing modeled partner-loan population and revenue with statement controls.
+    data_tests:
+      - unique_combination:
+          arguments:
+            combination_of_columns: [month_end_date, partner_id]
+    columns:
+      - name: month_end_date
+        description: Reconciliation month end.
+        data_tests: [not_null]
+      - name: partner_id
+        description: Synthetic partner identifier.
+        data_tests: [not_null]
+      - name: loan_count_variance
+        description: Modeled loan count less statement loan count.
+        data_tests: [not_null]
+      - name: revenue_variance
+        description: Modeled partner revenue less statement partner revenue.
+        data_tests: [not_null]
+
+  - name: int_finance__funding_reconciliation
+    description: One row per synthetic branch and month end comparing modeled funded-loan counts and amounts with funding statements.
+    data_tests:
+      - unique_combination:
+          arguments:
+            combination_of_columns: [month_end_date, branch_id]
+    columns:
+      - name: month_end_date
+        description: Reconciliation month end.
+        data_tests: [not_null]
+      - name: branch_id
+        description: Synthetic branch identifier.
+        data_tests: [not_null]
+      - name: funded_amount_variance
+        description: Modeled funded amount less statement funded amount.
+        data_tests: [not_null]
+      - name: funded_amount_reconciles
+        description: True when the absolute funded-amount variance is within one cent.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [true]
+      - name: loan_count_reconciles
+        description: True when modeled and statement funded-loan counts match.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [true]
+
+unit_tests:
+  - name: unit_profit_equation
+    description: Confirms the fictional profit equation and basis-point margin calculation on one deterministic loan.
+    model: int_finance__profit_calculation
+    given:
+      - input: ref('int_finance__loan_components')
+        rows:
+          - loan_id: LN_TEST_PROFIT
+            funded_amount: 100000.00
+            base_revenue: 3000.00
+            origination_fee_amount: 1000.00
+            partner_revenue_amount: 500.00
+            margin_adjustment_amount: -200.00
+            commission_amount: 1200.00
+            override_amount: 100.00
+            credit_cost_amount: 150.00
+            trueup_amount: 250.00
+            allocated_operating_cost: 500.00
+    expect:
+      rows:
+        - loan_id: LN_TEST_PROFIT
+          total_revenue: 4300.00
+          direct_cost: 1700.00
+          total_cost: 2200.00
+          profit_amount: 2100.00
+          profit_margin_bps: 210.00
+          profitability_status: PROFITABLE
+
+  - name: unit_partner_revenue_assignment
+    description: Confirms that a partner statement is assigned to its loan and missing adjustments default to zero.
+    model: int_finance__revenue_components
+    given:
+      - input: ref('stg_lending__loans')
+        rows:
+          - loan_id: LN_TEST_PARTNER
+            funded_amount: 100000.00
+            base_margin_bps: 300.00
+            origination_fee_amount: 1000.00
+      - input: ref('stg_partners__statements')
+        rows:
+          - loan_id: LN_TEST_PARTNER
+            partner_revenue_amount: 500.00
+      - input: ref('stg_costs__margin_adjustments')
+        rows: []
+    expect:
+      rows:
+        - loan_id: LN_TEST_PARTNER
+          base_revenue: 3000.00
+          origination_fee_amount: 1000.00
+          partner_revenue_amount: 500.00
+          margin_adjustment_amount: 0.00
+
